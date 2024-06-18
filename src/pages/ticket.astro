@@ -11,8 +11,8 @@ import Layout from '../layouts/Layout.astro';
     <div class="pregunta">
         ¿Es usted cliente de ATB Bank? <br/>
         <div class="botones">
-            <button class="boton" onclick="IsClient()">Sí</button>
-            <button class="boton" onclick="IsntClient()">No</button>
+            <button class="boton" id="yesBtn" onclick="IsClient()">Sí</button>
+            <button class="boton" id="noBtn" onclick="IsntClient()">No</button>
         </div>
     </div>
     <div class="pie">
@@ -20,6 +20,9 @@ import Layout from '../layouts/Layout.astro';
     </div>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.7/signalr.min.js" is:inline></script>
 	<script is:inline>
+        let yesBtn = document.getElementById("yesBtn");
+        let noBtn = document.getElementById("noBtn");
+
 		const connection = new signalR.HubConnectionBuilder()
                 .withUrl("https://atbapi.websitos256.com/tickets",{
                     skipNegotiaton:true,
@@ -31,20 +34,34 @@ import Layout from '../layouts/Layout.astro';
 
 		connection.on("GenerarTicket", (ticket) => {
             console.log("Ticket generado: ", ticket);
+            if(ticket == "El banco esta cerrado"){
+                alert("El banco esta cerrado, por favor vuelva en horario de atención");
+                return;
+            }
 			sessionStorage.setItem("ticket",ticket);
             window.location.href = "/myticket";
         });
 		async function IsClient(){
             try {
+                yesBtn.disabled = true;
+                noBtn.disabled = true;
                 await connection.invoke("GenerarTicket");
+                
+                
             } catch (error) {
+                yesBtn.disabled = false;
+                noBtn.disabled = false;
                 console.log(error);
             }
 		}
 		async function IsntClient(){
             try {
+                yesBtn.disabled = true;
+                noBtn.disabled = true;
                 await connection.invoke("GenerarTicket");
             } catch (error) {
+                yesBtn.disabled = false;
+                noBtn.disabled = false;
                 console.log(error);
             }
 		}
